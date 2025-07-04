@@ -1,0 +1,2677 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Play</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Almarai:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff0000;
+            --primary-dark: #cc0000;
+            --secondary-color: #ff3333;
+            --dark-color: #000000;
+            --darker-color: #111111;
+            --card-color: #1a1a1a;
+            --light-color: #FFFFFF;
+            --gray-color: #B3B3B3;
+            --glow-animation: glow 2s infinite alternate;
+            --star-color: rgba(255, 255, 255, 0.8);
+            --star-size: 1px;
+            --star-count: 500;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Almarai', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--dark-color);
+            color: var(--light-color);
+            overflow-x: hidden;
+            position: relative;
+            padding-bottom: 70px;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background-color: var(--star-color);
+            width: var(--star-size);
+            height: var(--star-size);
+            border-radius: 50%;
+            animation: twinkle var(--duration, 5s) infinite ease-in-out;
+            opacity: var(--opacity, 0.8);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.2); }
+            100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.6); }
+        }
+
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            transition: all 0.3s ease;
+        }
+
+        .app-logo {
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .main-content {
+            margin-top: 70px;
+            padding: 15px;
+            animation: fadeIn 0.8s ease-out;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .welcome-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            color: var(--gray-color);
+        }
+
+        .category-section {
+            margin-bottom: 30px;
+        }
+
+        .category-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-right: 10px;
+            display: flex;
+            align-items: center;
+            color: var(--light-color);
+        }
+
+        .category-title i {
+            margin-left: 10px;
+            color: var(--primary-color);
+        }
+
+        .movies-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--dark-color);
+        }
+
+        .movies-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .movies-container::-webkit-scrollbar-track {
+            background: var(--dark-color);
+        }
+
+        .movies-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 6px;
+        }
+
+        .movie-card {
+            position: relative;
+            min-width: 150px;
+            width: 150px;
+            height: 225px;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .movie-card.glow {
+            animation: var(--glow-animation);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .movie-title-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 8px;
+            text-align: center;
+        }
+
+        .movie-title-text {
+            font-size: 14px;
+            color: var(--light-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Series Card */
+        .series-card {
+            position: relative;
+            min-width: 150px;
+            width: 150px;
+            height: 225px;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        .series-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .series-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .series-info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 8px;
+            text-align: center;
+        }
+
+        .series-title {
+            font-size: 14px;
+            color: var(--light-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
+        }
+
+        .series-episodes {
+            font-size: 12px;
+            color: var(--gray-color);
+        }
+
+        /* Series Page */
+        .series-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--dark-color);
+            z-index: 200;
+            display: none;
+            overflow-y: auto;
+            padding-top: 70px;
+            padding-bottom: 70px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .series-container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .series-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .series-cover {
+            width: 120px;
+            height: 180px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 15px;
+        }
+
+        .series-info {
+            flex: 1;
+        }
+
+        .series-name {
+            font-size: 22px;
+            color: var(--light-color);
+            margin-bottom: 10px;
+        }
+
+        .series-description {
+            font-size: 14px;
+            color: var(--gray-color);
+            line-height: 1.5;
+        }
+
+        /* Seasons Section */
+        .seasons-section {
+            margin-top: 30px;
+        }
+
+        .seasons-title {
+            font-size: 18px;
+            color: var(--light-color);
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .seasons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .season-card {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .season-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        .season-number {
+            font-size: 16px;
+            color: var(--light-color);
+            margin-bottom: 5px;
+        }
+
+        .season-episodes-count {
+            font-size: 14px;
+            color: var(--gray-color);
+        }
+
+        /* Episodes Page */
+        .episodes-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--dark-color);
+            z-index: 300;
+            display: none;
+            overflow-y: auto;
+            padding-top: 70px;
+            padding-bottom: 70px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .episodes-container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .episodes-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .season-cover {
+            width: 100px;
+            height: 150px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 15px;
+        }
+
+        .season-info {
+            flex: 1;
+        }
+
+        .season-name {
+            font-size: 20px;
+            color: var(--light-color);
+            margin-bottom: 5px;
+        }
+
+        .season-description {
+            font-size: 14px;
+            color: var(--gray-color);
+            line-height: 1.5;
+        }
+
+        .episodes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .episode-card {
+            background-color: var(--darker-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .episode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+
+        .episode-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .episode-info {
+            padding: 10px;
+        }
+
+        .episode-number {
+            font-size: 12px;
+            color: var(--gray-color);
+            margin-bottom: 5px;
+        }
+
+        .episode-name {
+            font-size: 14px;
+            color: var(--light-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Movie/Episode Detail Page */
+        .detail-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--dark-color);
+            z-index: 400;
+            display: none;
+            overflow-y: auto;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .detail-backdrop {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .backdrop-overlay {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, var(--dark-color), transparent);
+            position: absolute;
+            bottom: 0;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .detail-info-container {
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .detail-poster-container {
+            display: flex;
+            justify-content: center;
+            margin-top: -100px;
+            margin-bottom: 20px;
+            z-index: 5;
+            position: relative;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .detail-poster-large {
+            width: 180px;
+            height: 270px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            border: 3px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .detail-poster-large:hover {
+            transform: scale(1.03);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.7);
+        }
+
+        .detail-info-content {
+            background-color: var(--card-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .detail-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--light-color);
+            font-family: 'Almarai', sans-serif;
+        }
+
+        .detail-rating {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .detail-rating i {
+            margin-left: 5px;
+            font-size: 12px;
+        }
+
+        .detail-description {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: var(--gray-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .play-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .play-button:hover::before {
+            left: 100%;
+        }
+
+        .play-button i {
+            margin-left: 10px;
+            transform: translateX(-10px);
+            transition: transform 0.3s;
+        }
+
+        .play-button:hover i {
+            transform: translateX(0);
+        }
+
+        .favorite-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .favorite-button.active {
+            color: var(--primary-color);
+        }
+
+        .favorite-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Video Player Page */
+        .video-player-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: black;
+            z-index: 500;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Top Controls */
+        .top-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .video-player-page:hover .top-controls,
+        .top-controls.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .video-title-container {
+            display: flex;
+            align-items: center;
+            max-width: 70%;
+        }
+
+        .video-title {
+            font-size: 16px;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .close-player-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .close-player-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Hide Controls Button */
+        .hide-controls-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+            z-index: 15;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .video-player-page:hover .hide-controls-btn,
+        .hide-controls-btn.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hide-controls-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Center Play Button */
+        .center-play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .center-play-btn.show {
+            opacity: 1;
+        }
+
+        .center-play-btn i {
+            color: white;
+            font-size: 30px;
+            transition: transform 0.2s;
+        }
+
+        .center-play-btn:active i {
+            transform: scale(1.2);
+        }
+
+        /* Bottom Controls */
+        .bottom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .video-player-page:hover .bottom-controls,
+        .bottom-controls.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Progress Bar - Improved */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            position: relative;
+            transition: height 0.2s;
+        }
+
+        .progress-container:hover {
+            height: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            width: 0%;
+            position: relative;
+            transition: width 0.1s;
+        }
+
+        .progress-handle {
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-container:hover .progress-handle {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        /* Buffered Progress */
+        .buffered-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            width: 0%;
+        }
+
+        /* Time Display */
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .current-time, .total-time {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Control Buttons */
+        .control-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .play-pause-btn {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Settings Menu */
+        .settings-menu {
+            position: absolute;
+            bottom: 80px;
+            right: 15px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 10px;
+            width: 200px;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .settings-menu.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .settings-title {
+            font-size: 14px;
+            color: var(--gray-color);
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 5px;
+        }
+
+        .settings-option {
+            padding: 8px 10px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-option.active {
+            color: var(--primary-color);
+        }
+
+        .settings-option i {
+            margin-left: 10px;
+        }
+
+        .settings-submenu {
+            display: none;
+            background-color: rgba(20, 20, 20, 0.9);
+            border-radius: 4px;
+            margin-top: 5px;
+            padding: 5px 0;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .settings-submenu.show {
+            display: block;
+            opacity: 1;
+            max-height: 200px;
+        }
+
+        .settings-suboption {
+            padding: 8px 15px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .settings-suboption:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-suboption.active {
+            color: var(--primary-color);
+        }
+
+        /* Favorites Page */
+        .favorites-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--dark-color);
+            z-index: 600;
+            display: none;
+            flex-direction: column;
+            padding-top: 70px;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .favorites-header {
+            padding: 15px;
+            font-size: 20px;
+            color: var(--primary-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .favorites-back-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .favorites-header i {
+            margin-left: 10px;
+        }
+
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            color: var(--gray-color);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .nav-button i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .nav-button.active {
+            color: var(--primary-color);
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+
+        .nav-button:hover {
+            color: var(--light-color);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Refresh Button */
+        .refresh-button {
+            position: fixed;
+            bottom: 70px;
+            right: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 50;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .refresh-button:hover {
+            transform: rotate(180deg);
+            background-color: var(--primary-dark);
+        }
+
+        /* Responsive Styles */
+        @media (min-width: 768px) {
+            .welcome-title {
+                font-size: 28px;
+            }
+            
+            .welcome-subtitle {
+                font-size: 18px;
+            }
+            
+            .category-title {
+                font-size: 22px;
+            }
+            
+            .detail-backdrop {
+                height: 350px;
+            }
+            
+            .detail-poster-large {
+                width: 200px;
+                height: 300px;
+            }
+            
+            .movie-card, .series-card {
+                min-width: 180px;
+                width: 180px;
+                height: 270px;
+            }
+            
+            .favorites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 20px;
+            }
+
+            .episodes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .series-cover {
+                width: 150px;
+                height: 225px;
+            }
+
+            .season-cover {
+                width: 120px;
+                height: 180px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .movie-card, .series-card {
+                min-width: 200px;
+                width: 200px;
+                height: 300px;
+            }
+            
+            .favorites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .episodes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+
+            .series-cover {
+                width: 180px;
+                height: 270px;
+            }
+
+            .season-cover {
+                width: 150px;
+                height: 225px;
+            }
+        }
+
+        @media (max-width: 767px) and (orientation: landscape) {
+            .video-player {
+                width: 100%;
+                height: auto;
+                max-height: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Starry Background -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Main Page -->
+    <header class="app-header">
+        <a href="#" class="app-logo" onclick="showMainPage()">Movie Play</a>
+    </header>
+    
+    <div class="main-content" id="main-page">
+        <section class="welcome-section">
+            <h1 class="welcome-title">مرحباً بك في Movie Play</h1>
+            <p class="welcome-subtitle">استمتع بأحدث الأفلام والمسلسلات</p>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-film"></i> الأفلام العربية</h2>
+            <div class="movies-container" id="arabic-movies"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-film"></i> الأفلام الأجنبية</h2>
+            <div class="movies-container" id="english-movies"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-film"></i> أفلام الأنمي</h2>
+            <div class="movies-container" id="anime-movies"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-film"></i> أفلام كورية</h2>
+            <div class="movies-container" id="korean-movies"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-tv"></i> مسلسلات عربية</h2>
+            <div class="movies-container" id="arabic-series"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-tv"></i> مسلسلات تركية</h2>
+            <div class="movies-container" id="turkish-series"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-tv"></i> مسلسلات كورية</h2>
+            <div class="movies-container" id="korean-series"></div>
+        </section>
+        
+        <section class="category-section">
+            <h2 class="category-title"><i class="fas fa-tv"></i> مسلسلات أنمي</h2>
+            <div class="movies-container" id="anime-series"></div>
+        </section>
+    </div>
+    
+    <!-- Series Page -->
+    <div class="series-page" id="series-page">
+        <button class="back-button" onclick="showMainPage()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
+        <div class="series-container" id="series-container">
+            <!-- Series info will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Episodes Page -->
+    <div class="episodes-page" id="episodes-page">
+        <button class="back-button" onclick="backToSeries()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
+        <div class="episodes-container" id="episodes-container">
+            <!-- Episodes will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Detail Page -->
+    <div class="detail-page" id="detail-page">
+        <div class="detail-backdrop" id="detail-backdrop">
+            <div class="backdrop-overlay"></div>
+            <button class="back-button" onclick="backToEpisodes()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        
+        <div class="detail-info-container">
+            <div class="detail-poster-container">
+                <img src="" alt="" class="detail-poster-large" id="detail-poster">
+            </div>
+            
+            <div class="detail-info-content">
+                <h1 class="detail-title" id="detail-title"></h1>
+                <div class="detail-rating" id="detail-rating">
+                    <i class="fas fa-star"></i>
+                    <span id="rating-value"></span>
+                </div>
+                <p class="detail-description" id="detail-description"></p>
+                
+                <div class="action-buttons">
+                    <button class="play-button" onclick="playCurrentItem()">
+                        <span>تشغيل</span>
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="favorite-button" id="favorite-btn">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Video Player Page -->
+    <div class="video-player-page" id="video-player-page">
+        <div class="video-container">
+            <video class="video-player" id="video-player"></video>
+            
+            <!-- Hide Controls Button -->
+            <button class="hide-controls-btn" id="hide-controls-btn">
+                <i class="fas fa-eye-slash"></i>
+            </button>
+            
+            <!-- Top Controls -->
+            <div class="top-controls">
+                <div class="video-title-container">
+                    <button class="close-player-btn" onclick="backFromPlayer()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="video-title" id="player-title"></div>
+                </div>
+            </div>
+            
+            <!-- Center Play Button -->
+            <div class="center-play-btn" id="center-play-btn">
+                <i class="fas fa-play" id="center-play-icon"></i>
+            </div>
+            
+            <!-- Bottom Controls -->
+            <div class="bottom-controls">
+                <!-- Progress Bar -->
+                <div class="progress-container" id="progress-container">
+                    <div class="buffered-bar" id="buffered-bar"></div>
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress-handle"></div>
+                    </div>
+                </div>
+                
+                <!-- Time Display -->
+                <div class="time-display">
+                    <span class="current-time" id="current-time">00:00</span>
+                    <span class="total-time" id="total-time">00:00</span>
+                </div>
+                
+                <!-- Control Buttons -->
+                <div class="control-buttons">
+                    <button class="control-btn" id="mute-btn">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <button class="control-btn" onclick="skipBackward()">
+                        <i class="fas fa-backward"></i>
+                    </button>
+                    <button class="control-btn play-pause-btn" id="play-pause-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" onclick="skipForward()">
+                        <i class="fas fa-forward"></i>
+                    </button>
+                    <button class="control-btn" id="fullscreen-btn">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="control-btn" id="settings-btn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Settings Menu -->
+            <div class="settings-menu" id="settings-menu">
+                <div class="settings-title">الإعدادات</div>
+                
+                <div class="settings-option" id="quality-option">
+                    <span>الجودة</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="settings-submenu" id="quality-submenu">
+                    <div class="settings-suboption" data-quality="auto">تلقائي</div>
+                    <div class="settings-suboption" data-quality="240">240p</div>
+                    <div class="settings-suboption" data-quality="480">480p</div>
+                    <div class="settings-suboption" data-quality="720">720p</div>
+                    <div class="settings-suboption" data-quality="1080">1080p</div>
+                </div>
+                
+                <div class="settings-option" id="speed-option">
+                    <span>سرعة التشغيل</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="settings-submenu" id="speed-submenu">
+                    <div class="settings-suboption" data-speed="0.5">0.5x</div>
+                    <div class="settings-suboption" data-speed="0.75">0.75x</div>
+                    <div class="settings-suboption" data-speed="1" class="active">1x (عادي)</div>
+                    <div class="settings-suboption" data-speed="1.25">1.25x</div>
+                    <div class="settings-suboption" data-speed="1.5">1.5x</div>
+                    <div class="settings-suboption" data-speed="2">2x</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Favorites Page -->
+    <div class="favorites-page" id="favorites-page">
+        <div class="favorites-header">
+            <button class="favorites-back-button" onclick="showMainPage()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <i class="fas fa-heart"></i>
+            <span>المفضلة</span>
+        </div>
+        
+        <div class="favorites-grid" id="favorites-grid">
+            <!-- Favorites will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-button active" onclick="showMainPage()">
+            <i class="fas fa-home"></i>
+            <span>الرئيسية</span>
+        </button>
+        <button class="nav-button" onclick="showFavoritesPage()">
+            <i class="fas fa-heart"></i>
+            <span>المفضلة</span>
+        </button>
+    </nav>
+    
+    <!-- Refresh Button -->
+    <button class="refresh-button" id="refresh-button" onclick="refreshContent()">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loading-spinner">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmPMRk4pvowUnqQb3fCSTZqLRNiU6-ouo",
+            authDomain: "marvel1-654dd.firebaseapp.com",
+            databaseURL: "https://marvel1-654dd-default-rtdb.firebaseio.com",
+            projectId: "marvel1-654dd",
+            storageBucket: "marvel1-654dd.appspot.com",
+            messagingSenderId: "189921979866",
+            appId: "1:189921979866:android:95f48de58a69756be924e3"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Current items data
+        let currentItem = {
+            type: '', // 'movie' or 'episode'
+            category: '',
+            id: '',
+            name: '',
+            desc: '',
+            image: '',
+            url: '',
+            qualityUrls: {},
+            rating: 0,
+            currentTime: 0
+        };
+        
+        let currentSeries = {
+            category: '',
+            seriesId: '',
+            name: '',
+            cover: '',
+            seasons: []
+        };
+        
+        let currentSeason = {
+            seriesId: '',
+            seasonId: '',
+            name: '',
+            desc: '',
+            episodes: []
+        };
+        
+        // App state
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || {};
+        let isFullscreen = false;
+        let isPlaying = false;
+        let isMuted = false;
+        let controlsTimeout;
+        let lastTapTime = 0;
+        let currentQuality = 'auto';
+        let currentSpeed = 1;
+        let controlsHidden = false;
+        
+        // DOM elements
+        const mainPage = document.getElementById('main-page');
+        const seriesPage = document.getElementById('series-page');
+        const episodesPage = document.getElementById('episodes-page');
+        const detailPage = document.getElementById('detail-page');
+        const videoPlayerPage = document.getElementById('video-player-page');
+        const favoritesPage = document.getElementById('favorites-page');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const starsContainer = document.getElementById('stars');
+        const videoPlayer = document.getElementById('video-player');
+        const centerPlayBtn = document.getElementById('center-play-btn');
+        const centerPlayIcon = document.getElementById('center-play-icon');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const muteBtn = document.getElementById('mute-btn');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const bufferedBar = document.getElementById('buffered-bar');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        const qualityOption = document.getElementById('quality-option');
+        const qualitySubmenu = document.getElementById('quality-submenu');
+        const speedOption = document.getElementById('speed-option');
+        const speedSubmenu = document.getElementById('speed-submenu');
+        const hideControlsBtn = document.getElementById('hide-controls-btn');
+        const refreshButton = document.getElementById('refresh-button');
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            initVideoPlayer();
+            loadAllContent();
+            setupGlowEffect();
+            loadFavorites();
+            initSettingsMenu();
+            
+            // Handle back button on mobile devices
+            window.onpopstate = function(event) {
+                if (videoPlayerPage.style.display === 'block') {
+                    backFromPlayer();
+                } else if (detailPage.style.display === 'block') {
+                    backToEpisodes();
+                } else if (episodesPage.style.display === 'block') {
+                    backToSeries();
+                } else if (seriesPage.style.display === 'block') {
+                    showMainPage();
+                } else if (favoritesPage.style.display === 'block') {
+                    showMainPage();
+                }
+            };
+        });
+        
+        // Create starry background
+        function createStars() {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.opacity = Math.random();
+                star.style.setProperty('--duration', `${5 + Math.random() * 10}s`);
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Initialize video player
+        function initVideoPlayer() {
+            // Play/Pause functionality
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            centerPlayBtn.addEventListener('click', togglePlayPause);
+            
+            // Mute button
+            muteBtn.addEventListener('click', toggleMute);
+            
+            // Video click handlers
+            videoPlayer.addEventListener('click', handleVideoClick);
+            
+            // Time display update
+            videoPlayer.addEventListener('timeupdate', updateTimeDisplay);
+            
+            // Handle video end
+            videoPlayer.addEventListener('ended', () => {
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                centerPlayIcon.className = 'fas fa-play';
+                isPlaying = false;
+                centerPlayBtn.classList.add('show');
+            });
+            
+            // Handle fullscreen change
+            document.addEventListener('fullscreenchange', () => {
+                isFullscreen = !!document.fullscreenElement;
+                fullscreenBtn.innerHTML = isFullscreen ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+            });
+            
+            // Fullscreen button
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
+            // Initialize video player events
+            videoPlayer.addEventListener('play', () => {
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                centerPlayIcon.className = 'fas fa-pause';
+                centerPlayBtn.classList.remove('show');
+            });
+            
+            videoPlayer.addEventListener('pause', () => {
+                isPlaying = false;
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                centerPlayIcon.className = 'fas fa-play';
+                centerPlayBtn.classList.add('show');
+            });
+            
+            // Initialize progress bar
+            initProgressBar();
+            
+            // Hide controls when mouse is not moving
+            videoPlayerPage.addEventListener('mousemove', () => {
+                if (!controlsHidden) {
+                    resetControlsTimer();
+                }
+            });
+            
+            // Save current time when leaving player
+            videoPlayer.addEventListener('timeupdate', () => {
+                currentItem.currentTime = videoPlayer.currentTime;
+            });
+            
+            // Update buffered progress
+            videoPlayer.addEventListener('progress', updateBufferedProgress);
+            
+            // Hide controls button
+            hideControlsBtn.addEventListener('click', toggleControlsVisibility);
+        }
+        
+        // Initialize settings menu
+        function initSettingsMenu() {
+            // Toggle settings menu
+            settingsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                settingsMenu.classList.toggle('show');
+                
+                // Hide other submenus
+                qualitySubmenu.classList.remove('show');
+                speedSubmenu.classList.remove('show');
+                
+                if (!controlsHidden) {
+                    resetControlsTimer();
+                }
+            });
+            
+            // Toggle quality submenu
+            qualityOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                qualitySubmenu.classList.toggle('show');
+                speedSubmenu.classList.remove('show');
+            });
+            
+            // Toggle speed submenu
+            speedOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                speedSubmenu.classList.toggle('show');
+                qualitySubmenu.classList.remove('show');
+            });
+            
+            // Handle quality selection
+            document.querySelectorAll('#quality-submenu .settings-suboption').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const quality = option.getAttribute('data-quality');
+                    setVideoQuality(quality);
+                    
+                    // Update active state
+                    document.querySelectorAll('#quality-submenu .settings-suboption').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    option.classList.add('active');
+                    
+                    // Update quality text
+                    document.querySelector('#quality-option span').textContent = `الجودة: ${quality === 'auto' ? 'تلقائي' : quality + 'p'}`;
+                    
+                    // Hide submenu
+                    qualitySubmenu.classList.remove('show');
+                });
+            });
+            
+            // Handle speed selection
+            document.querySelectorAll('#speed-submenu .settings-suboption').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const speed = parseFloat(option.getAttribute('data-speed'));
+                    setPlaybackSpeed(speed);
+                    
+                    // Update active state
+                    document.querySelectorAll('#speed-submenu .settings-suboption').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    option.classList.add('active');
+                    
+                    // Update speed text
+                    document.querySelector('#speed-option span').textContent = `السرعة: ${speed}x`;
+                    
+                    // Hide submenu
+                    speedSubmenu.classList.remove('show');
+                });
+            });
+            
+            // Close settings when clicking outside
+            document.addEventListener('click', () => {
+                settingsMenu.classList.remove('show');
+                qualitySubmenu.classList.remove('show');
+                speedSubmenu.classList.remove('show');
+            });
+            
+            // Set default active options
+            document.querySelector('#speed-submenu .settings-suboption[data-speed="1"]').classList.add('active');
+            document.querySelector('#quality-submenu .settings-suboption[data-quality="auto"]').classList.add('active');
+        }
+        
+        // Toggle controls visibility
+        function toggleControlsVisibility() {
+            controlsHidden = !controlsHidden;
+            
+            if (controlsHidden) {
+                // Hide all controls
+                document.querySelector('.top-controls').classList.remove('active');
+                document.querySelector('.bottom-controls').classList.remove('active');
+                settingsMenu.classList.remove('show');
+                qualitySubmenu.classList.remove('show');
+                speedSubmenu.classList.remove('show');
+                hideControlsBtn.innerHTML = '<i class="fas fa-eye"></i>';
+            } else {
+                // Show all controls
+                document.querySelector('.top-controls').classList.add('active');
+                document.querySelector('.bottom-controls').classList.add('active');
+                hideControlsBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                resetControlsTimer();
+            }
+        }
+        
+        // Set video quality
+        function setVideoQuality(quality) {
+            currentQuality = quality;
+            
+            if (quality === 'auto') {
+                // Use default URL
+                if (videoPlayer.src !== currentItem.url) {
+                    videoPlayer.src = currentItem.url;
+                    videoPlayer.load();
+                    if (isPlaying) videoPlayer.play();
+                }
+                return;
+            }
+            
+            // Check if this quality is available
+            if (currentItem.qualityUrls && currentItem.qualityUrls[quality]) {
+                if (videoPlayer.src !== currentItem.qualityUrls[quality]) {
+                    videoPlayer.src = currentItem.qualityUrls[quality];
+                    videoPlayer.load();
+                    if (isPlaying) videoPlayer.play();
+                }
+            } else {
+                alert('هذه الجودة غير متوفرة لهذا الفيديو');
+            }
+        }
+        
+        // Set playback speed
+        function setPlaybackSpeed(speed) {
+            currentSpeed = speed;
+            videoPlayer.playbackRate = speed;
+        }
+        
+        // Initialize progress bar with improved dragging
+        function initProgressBar() {
+            let isDragging = false;
+            let wasPlaying = false;
+            
+            progressContainer.addEventListener('mousedown', startDrag);
+            progressContainer.addEventListener('touchstart', startDrag);
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            
+            function startDrag(e) {
+                if (videoPlayer.readyState === 0) return;
+                
+                isDragging = true;
+                wasPlaying = !videoPlayer.paused;
+                if (wasPlaying) videoPlayer.pause();
+                
+                updateProgress(e);
+                e.preventDefault();
+            }
+            
+            function drag(e) {
+                if (!isDragging) return;
+                updateProgress(e);
+                e.preventDefault();
+            }
+            
+            function endDrag() {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                if (videoPlayer.readyState > 0) {
+                    const percent = parseFloat(progressBar.style.width) / 100;
+                    videoPlayer.currentTime = percent * videoPlayer.duration;
+                    
+                    if (wasPlaying) {
+                        videoPlayer.play().catch(e => console.error('Error resuming playback:', e));
+                    }
+                }
+            }
+            
+            function updateProgress(e) {
+                const rect = progressContainer.getBoundingClientRect();
+                let pos = 0;
+                
+                if (e.type.includes('touch')) {
+                    pos = (e.touches[0].clientX - rect.left) / rect.width;
+                } else {
+                    pos = (e.clientX - rect.left) / rect.width;
+                }
+                
+                pos = Math.max(0, Math.min(1, pos));
+                progressBar.style.width = `${pos * 100}%`;
+                
+                if (videoPlayer.readyState > 0) {
+                    const newTime = pos * videoPlayer.duration;
+                    document.getElementById('current-time').textContent = formatTime(newTime);
+                }
+            }
+        }
+        
+        // Update buffered progress
+        function updateBufferedProgress() {
+            if (videoPlayer.buffered.length > 0) {
+                const bufferedEnd = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+                const duration = videoPlayer.duration;
+                if (duration > 0) {
+                    const bufferedPercent = (bufferedEnd / duration) * 100;
+                    bufferedBar.style.width = `${bufferedPercent}%`;
+                }
+            }
+        }
+        
+        // Load all content from Firebase
+        function loadAllContent() {
+            showLoading();
+            
+            // Load Arabic Movies
+            database.ref('ar').once('value').then(snapshot => {
+                const movies = snapshot.val();
+                const arabicMovies = document.getElementById('arabic-movies');
+                arabicMovies.innerHTML = '';
+                
+                for (const key in movies) {
+                    if (movies.hasOwnProperty(key)) {
+                        const movie = movies[key];
+                        arabicMovies.appendChild(createMovieCard(movie, 'ar', key));
+                    }
+                }
+            });
+            
+            // Load English Movies
+            database.ref('en').once('value').then(snapshot => {
+                const movies = snapshot.val();
+                const englishMovies = document.getElementById('english-movies');
+                englishMovies.innerHTML = '';
+                
+                for (const key in movies) {
+                    if (movies.hasOwnProperty(key)) {
+                        const movie = movies[key];
+                        englishMovies.appendChild(createMovieCard(movie, 'en', key));
+                    }
+                }
+            });
+            
+            // Load Anime Movies
+            database.ref('ani').once('value').then(snapshot => {
+                const movies = snapshot.val();
+                const animeMovies = document.getElementById('anime-movies');
+                animeMovies.innerHTML = '';
+                
+                for (const key in movies) {
+                    if (movies.hasOwnProperty(key)) {
+                        const movie = movies[key];
+                        animeMovies.appendChild(createMovieCard(movie, 'ani', key));
+                    }
+                }
+            });
+            
+            // Load Korean Movies
+            database.ref('kr').once('value').then(snapshot => {
+                const movies = snapshot.val();
+                const koreanMovies = document.getElementById('korean-movies');
+                koreanMovies.innerHTML = '';
+                
+                for (const key in movies) {
+                    if (movies.hasOwnProperty(key)) {
+                        const movie = movies[key];
+                        koreanMovies.appendChild(createMovieCard(movie, 'kr', key));
+                    }
+                }
+            });
+            
+            // Load Arabic Series
+            database.ref('arSerious').once('value').then(snapshot => {
+                const series = snapshot.val();
+                const arabicSeries = document.getElementById('arabic-series');
+                arabicSeries.innerHTML = '';
+                
+                for (const seriesKey in series) {
+                    if (series.hasOwnProperty(seriesKey)) {
+                        const seriesData = series[seriesKey];
+                        
+                        arabicSeries.appendChild(createSeriesCard({
+                            name: seriesData.name || 'مسلسل جديد',
+                            cover: seriesData.cover || 'https://via.placeholder.com/150x225'
+                        }, 'arSerious', seriesKey));
+                    }
+                }
+            });
+            
+            // Load Turkish Series
+            database.ref('trSerious').once('value').then(snapshot => {
+                const series = snapshot.val();
+                const turkishSeries = document.getElementById('turkish-series');
+                turkishSeries.innerHTML = '';
+                
+                for (const seriesKey in series) {
+                    if (series.hasOwnProperty(seriesKey)) {
+                        const seriesData = series[seriesKey];
+                        
+                        turkishSeries.appendChild(createSeriesCard({
+                            name: seriesData.name || 'مسلسل تركي جديد',
+                            cover: seriesData.cover || 'https://via.placeholder.com/150x225'
+                        }, 'trSerious', seriesKey));
+                    }
+                }
+            });
+            
+            // Load Korean Series
+            database.ref('krSerious').once('value').then(snapshot => {
+                const series = snapshot.val();
+                const koreanSeries = document.getElementById('korean-series');
+                koreanSeries.innerHTML = '';
+                
+                for (const seriesKey in series) {
+                    if (series.hasOwnProperty(seriesKey)) {
+                        const seriesData = series[seriesKey];
+                        
+                        koreanSeries.appendChild(createSeriesCard({
+                            name: seriesData.name || 'مسلسل كوري جديد',
+                            cover: seriesData.cover || 'https://via.placeholder.com/150x225'
+                        }, 'krSerious', seriesKey));
+                    }
+                }
+            });
+            
+            // Load Anime Series
+            database.ref('aniSerious').once('value').then(snapshot => {
+                const series = snapshot.val();
+                const animeSeries = document.getElementById('anime-series');
+                animeSeries.innerHTML = '';
+                
+                for (const seriesKey in series) {
+                    if (series.hasOwnProperty(seriesKey)) {
+                        const seriesData = series[seriesKey];
+                        
+                        animeSeries.appendChild(createSeriesCard({
+                            name: seriesData.name || 'مسلسل أنمي جديد',
+                            cover: seriesData.cover || 'https://via.placeholder.com/150x225'
+                        }, 'aniSerious', seriesKey));
+                    }
+                }
+                
+                hideLoading();
+            }).catch(error => {
+                console.error('Error loading content:', error);
+                hideLoading();
+            });
+        }
+        
+        // Create movie card element
+        function createMovieCard(movie, category, id) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            
+            card.innerHTML = `
+                <img src="${movie.image}" alt="${movie.name}" class="movie-poster">
+                <div class="movie-title-overlay">
+                    <div class="movie-title-text">${movie.name}</div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                showDetailPage({
+                    type: 'movie',
+                    category: category,
+                    id: id,
+                    name: movie.name,
+                    desc: movie.desc,
+                    image: movie.image,
+                    url: movie.url,
+                    qualityUrls: movie.qualityUrls || {},
+                    rating: movie.rating || 0,
+                    currentTime: 0
+                });
+            });
+            
+            return card;
+        }
+        
+        // Create series card element
+        function createSeriesCard(series, category, seriesId) {
+            const card = document.createElement('div');
+            card.className = 'series-card';
+            
+            card.innerHTML = `
+                <img src="${series.cover}" alt="${series.name}" class="series-poster">
+                <div class="series-info-overlay">
+                    <div class="series-title">${series.name}</div>
+                    <div class="series-episodes">مسلسل</div>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                showLoading();
+                database.ref(category).child(seriesId).once('value').then(snapshot => {
+                    const seriesData = snapshot.val();
+                    
+                    currentSeries = {
+                        category: category,
+                        seriesId: seriesId,
+                        name: seriesData.name || series.name,
+                        cover: seriesData.cover || series.cover,
+                        seasons: []
+                    };
+                    
+                    // Convert seasons object to array
+                    for (const seasonKey in seriesData) {
+                        if (seriesData.hasOwnProperty(seasonKey) && seasonKey.startsWith('s')) {
+                            const season = seriesData[seasonKey];
+                            currentSeries.seasons.push({
+                                id: seasonKey,
+                                name: season.name || `الموسم ${seasonKey.substring(1)}`,
+                                desc: season.desc || '',
+                                episodes: []
+                            });
+                            
+                            // Convert episodes object to array
+                            for (const epKey in season) {
+                                if (season.hasOwnProperty(epKey) && epKey.startsWith('m')) {
+                                    currentSeries.seasons[currentSeries.seasons.length - 1].episodes.push({
+                                        id: epKey,
+                                        ...season[epKey]
+                                    });
+                                }
+                            }
+                            
+                            // Sort episodes by ID (m1, m2, etc.)
+                            currentSeries.seasons[currentSeries.seasons.length - 1].episodes.sort((a, b) => {
+                                const aNum = parseInt(a.id.substring(1));
+                                const bNum = parseInt(b.id.substring(1));
+                                return aNum - bNum;
+                            });
+                        }
+                    }
+                    
+                    // Sort seasons by ID (s1, s2, etc.)
+                    currentSeries.seasons.sort((a, b) => {
+                        const aNum = parseInt(a.id.substring(1));
+                        const bNum = parseInt(b.id.substring(1));
+                        return aNum - bNum;
+                    });
+                    
+                    showSeriesPage();
+                    hideLoading();
+                }).catch(error => {
+                    console.error('Error loading series:', error);
+                    hideLoading();
+                });
+            });
+            
+            return card;
+        }
+        
+        // Show series page
+        function showSeriesPage() {
+            const seriesContainer = document.getElementById('series-container');
+            seriesContainer.innerHTML = '';
+            
+            // Series header
+            const seriesHeader = document.createElement('div');
+            seriesHeader.className = 'series-header';
+            seriesHeader.innerHTML = `
+                <img src="${currentSeries.cover}" alt="${currentSeries.name}" class="series-cover">
+                <div class="series-info">
+                    <h2 class="series-name">${currentSeries.name}</h2>
+                    <p class="series-description">مسلسل يتكون من ${currentSeries.seasons.length} مواسم</p>
+                </div>
+            `;
+            seriesContainer.appendChild(seriesHeader);
+            
+            // Seasons section
+            const seasonsSection = document.createElement('div');
+            seasonsSection.className = 'seasons-section';
+            seasonsSection.innerHTML = `
+                <h3 class="seasons-title">الموسم</h3>
+                <div class="seasons-grid" id="seasons-grid"></div>
+            `;
+            seriesContainer.appendChild(seasonsSection);
+            
+            const seasonsGrid = document.getElementById('seasons-grid');
+            
+            // Add season cards
+            currentSeries.seasons.forEach(season => {
+                const seasonCard = document.createElement('div');
+                seasonCard.className = 'season-card';
+                seasonCard.innerHTML = `
+                    <div class="season-number">${season.name}</div>
+                    <div class="season-episodes-count">${season.episodes.length} حلقة</div>
+                `;
+                
+                seasonCard.addEventListener('click', () => {
+                    currentSeason = {
+                        seriesId: currentSeries.seriesId,
+                        seasonId: season.id,
+                        name: season.name,
+                        desc: season.desc,
+                        episodes: season.episodes
+                    };
+                    showEpisodesPage();
+                });
+                
+                seasonsGrid.appendChild(seasonCard);
+            });
+            
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'block';
+            episodesPage.style.display = 'none';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'none';
+            
+            // Add to history for back button
+            history.pushState({ page: 'series' }, null, null);
+        }
+        
+        // Back to series from episodes
+        function backToSeries() {
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'block';
+            episodesPage.style.display = 'none';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'none';
+            
+            // Add to history for back button
+            history.pushState({ page: 'series' }, null, null);
+        }
+        
+        // Show episodes page
+        function showEpisodesPage() {
+            const episodesContainer = document.getElementById('episodes-container');
+            episodesContainer.innerHTML = '';
+            
+            // Season header
+            const episodesHeader = document.createElement('div');
+            episodesHeader.className = 'episodes-header';
+            episodesHeader.innerHTML = `
+                <img src="${currentSeries.cover}" alt="${currentSeason.name}" class="season-cover">
+                <div class="season-info">
+                    <h2 class="season-name">${currentSeries.name} - ${currentSeason.name}</h2>
+                    <p class="season-description">${currentSeason.desc || 'لا يوجد وصف متاح'}</p>
+                </div>
+            `;
+            episodesContainer.appendChild(episodesHeader);
+            
+            // Episodes grid
+            const episodesGrid = document.createElement('div');
+            episodesGrid.className = 'episodes-grid';
+            episodesGrid.id = 'episodes-grid';
+            episodesContainer.appendChild(episodesGrid);
+            
+            // Add episode cards
+            currentSeason.episodes.forEach(episode => {
+                const episodeCard = document.createElement('div');
+                episodeCard.className = 'episode-card';
+                
+                episodeCard.innerHTML = `
+                    <img src="${episode.image}" alt="${episode.name}" class="episode-image">
+                    <div class="episode-info">
+                        <div class="episode-number">${episode.tak || `الحلقة ${episode.id.substring(1)}`}</div>
+                        <div class="episode-name">${episode.name}</div>
+                    </div>
+                `;
+                
+                episodeCard.addEventListener('click', () => {
+                    showDetailPage({
+                        type: 'episode',
+                        category: currentSeries.category,
+                        id: episode.id,
+                        name: episode.name,
+                        desc: episode.desc,
+                        image: episode.image,
+                        url: episode.url,
+                        qualityUrls: episode.qualityUrls || {},
+                        rating: episode.rating || 0,
+                        currentTime: 0
+                    });
+                });
+                
+                episodesGrid.appendChild(episodeCard);
+            });
+            
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'none';
+            episodesPage.style.display = 'block';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'none';
+            
+            // Add to history for back button
+            history.pushState({ page: 'episodes' }, null, null);
+        }
+        
+        // Back to episodes from detail
+        function backToEpisodes() {
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'none';
+            episodesPage.style.display = 'block';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'none';
+            
+            // Add to history for back button
+            history.pushState({ page: 'episodes' }, null, null);
+        }
+        
+        // Show detail page
+        function showDetailPage(item) {
+            currentItem = item;
+            
+            // Update detail page
+            document.getElementById('detail-title').textContent = item.name;
+            document.getElementById('detail-description').textContent = item.desc;
+            document.getElementById('detail-poster').src = item.image;
+            document.getElementById('detail-rating').innerHTML = `
+                <i class="fas fa-star"></i>
+                <span>${item.rating.toFixed(1)}</span>
+            `;
+            document.getElementById('detail-backdrop').style.backgroundImage = `url('${item.image}')`;
+            
+            // Update favorite button
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const itemKey = `${item.type}_${item.category}_${item.id}`;
+            if (favorites[itemKey]) {
+                favoriteBtn.classList.add('active');
+            } else {
+                favoriteBtn.classList.remove('active');
+            }
+            
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'none';
+            episodesPage.style.display = 'none';
+            detailPage.style.display = 'block';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'none';
+            
+            // Add to history for back button
+            history.pushState({ page: 'detail' }, null, null);
+        }
+        
+        // Play current item
+        function playCurrentItem() {
+            showVideoPlayer(currentItem.url, currentItem.name, currentItem.qualityUrls);
+        }
+        
+        // Show video player
+        function showVideoPlayer(videoUrl, videoTitle, qualityUrls = {}) {
+            showLoading();
+            
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'none';
+            episodesPage.style.display = 'none';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'block';
+            favoritesPage.style.display = 'none';
+            
+            // Update current item with quality URLs if available
+            if (qualityUrls && Object.keys(qualityUrls).length > 0) {
+                currentItem.qualityUrls = qualityUrls;
+            }
+            
+            // Set video source
+            videoPlayer.src = videoUrl || currentItem.url;
+            
+            document.getElementById('player-title').textContent = videoTitle || currentItem.name;
+            
+            // Reset player state
+            isMuted = false;
+            videoPlayer.muted = false;
+            muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            controlsHidden = false;
+            hideControlsBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            
+            // Start from saved time if available
+            if (currentItem.currentTime > 0) {
+                videoPlayer.currentTime = currentItem.currentTime;
+            }
+            
+            // Reset quality and speed
+            currentQuality = 'auto';
+            currentSpeed = 1;
+            videoPlayer.playbackRate = 1;
+            
+            // Start paused
+            videoPlayer.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            centerPlayIcon.className = 'fas fa-play';
+            centerPlayBtn.classList.add('show');
+            isPlaying = false;
+            
+            videoPlayer.oncanplay = () => {
+                hideLoading();
+                // Show controls initially
+                document.querySelector('.top-controls').classList.add('active');
+                document.querySelector('.bottom-controls').classList.add('active');
+                hideControlsBtn.classList.add('active');
+                resetControlsTimer();
+            };
+            
+            videoPlayer.onerror = () => {
+                hideLoading();
+                alert('حدث خطأ أثناء تحميل الفيديو. يرجى المحاولة لاحقًا.');
+                showDetailPage(currentItem);
+            };
+            
+            // Add to history for back button
+            history.pushState({ page: 'player' }, null, null);
+        }
+        
+        // Back from player
+        function backFromPlayer() {
+            // Save current time before leaving
+            currentItem.currentTime = videoPlayer.currentTime;
+            
+            // Pause video
+            videoPlayer.pause();
+            
+            showDetailPage(currentItem);
+        }
+        
+        // Handle video click (play/pause or show controls)
+        function handleVideoClick(e) {
+            const now = Date.now();
+            
+            if (now - lastTapTime < 300) {
+                // Double tap - skip forward/backward
+                const rect = e.target.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                
+                if (pos < 0.3) {
+                    skipBackward();
+                } else if (pos > 0.7) {
+                    skipForward();
+                } else {
+                    togglePlayPause();
+                }
+            } else {
+                // Single tap - toggle play/pause or show controls
+                if (controlsHidden) {
+                    toggleControlsVisibility();
+                } else {
+                    togglePlayPause();
+                }
+            }
+            
+            lastTapTime = now;
+            
+            if (!controlsHidden) {
+                resetControlsTimer();
+            }
+        }
+        
+        // Reset controls hide timer
+        function resetControlsTimer() {
+            clearTimeout(controlsTimeout);
+            
+            if (controlsHidden) return;
+            
+            // Show controls
+            document.querySelector('.top-controls').classList.add('active');
+            document.querySelector('.bottom-controls').classList.add('active');
+            hideControlsBtn.classList.add('active');
+            
+            // Hide after 5 seconds
+            controlsTimeout = setTimeout(() => {
+                if (!isPlaying) return;
+                
+                document.querySelector('.top-controls').classList.remove('active');
+                document.querySelector('.bottom-controls').classList.remove('active');
+                hideControlsBtn.classList.remove('active');
+                settingsMenu.classList.remove('show');
+                qualitySubmenu.classList.remove('show');
+                speedSubmenu.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (videoPlayer.paused) {
+                videoPlayer.play().catch(e => console.error('Error playing video:', e));
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                centerPlayIcon.className = 'fas fa-pause';
+                centerPlayBtn.classList.remove('show');
+            } else {
+                videoPlayer.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                centerPlayIcon.className = 'fas fa-play';
+                centerPlayBtn.classList.add('show');
+            }
+            
+            resetControlsTimer();
+        }
+        
+        // Toggle mute
+        function toggleMute() {
+            isMuted = !isMuted;
+            videoPlayer.muted = isMuted;
+            muteBtn.innerHTML = isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+            resetControlsTimer();
+        }
+        
+        // Skip backward 10 seconds
+        function skipBackward() {
+            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 10);
+            resetControlsTimer();
+        }
+        
+        // Skip forward 10 seconds
+        function skipForward() {
+            videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 10);
+            resetControlsTimer();
+        }
+        
+        // Update time display
+        function updateTimeDisplay() {
+            const currentTime = formatTime(videoPlayer.currentTime);
+            const totalTime = formatTime(videoPlayer.duration);
+            
+            document.getElementById('current-time').textContent = currentTime;
+            document.getElementById('total-time').textContent = totalTime;
+            
+            const progressPercent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+        }
+        
+        // Format time (seconds to MM:SS)
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+            
+            resetControlsTimer();
+        }
+        
+        // Toggle favorite
+        function toggleFavorite() {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            const itemKey = `${currentItem.type}_${currentItem.category}_${currentItem.id}`;
+            
+            if (favorites[itemKey]) {
+                delete favorites[itemKey];
+                favoriteBtn.classList.remove('active');
+            } else {
+                favorites[itemKey] = currentItem;
+                favoriteBtn.classList.add('active');
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            loadFavorites();
+        }
+        
+        // Load favorites
+        function loadFavorites() {
+            const favoritesGrid = document.getElementById('favorites-grid');
+            favoritesGrid.innerHTML = '';
+            
+            if (Object.keys(favorites).length === 0) {
+                favoritesGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: var(--gray-color); padding: 40px 0;">
+                        <i class="fas fa-heart" style="font-size: 40px; margin-bottom: 15px;"></i>
+                        <p>لا توجد عناصر في قائمة المفضلة</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            for (const key in favorites) {
+                const item = favorites[key];
+                const card = document.createElement('div');
+                card.className = item.type === 'episode' ? 'series-card' : 'movie-card';
+                
+                if (item.type === 'episode') {
+                    card.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" class="series-poster">
+                        <div class="series-info-overlay">
+                            <div class="series-title">${item.name}</div>
+                            <div class="series-episodes">حلقة</div>
+                        </div>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" class="movie-poster">
+                        <div class="movie-title-overlay">
+                            <div class="movie-title-text">${item.name}</div>
+                        </div>
+                    `;
+                }
+                
+                card.addEventListener('click', () => {
+                    if (item.type === 'episode') {
+                        showDetailPage(item);
+                    } else {
+                        showDetailPage(item);
+                    }
+                });
+                
+                favoritesGrid.appendChild(card);
+            }
+        }
+        
+        // Show main page
+        function showMainPage() {
+            // Pause video if playing
+            if (videoPlayer && !videoPlayer.paused) {
+                videoPlayer.pause();
+            }
+            
+            mainPage.style.display = 'block';
+            seriesPage.style.display = 'none';
+            episodesPage.style.display = 'none';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'none';
+            
+            document.querySelectorAll('.bottom-nav .nav-button').forEach((btn, index) => {
+                if (index === 0) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Add to history for back button
+            history.pushState({ page: 'main' }, null, null);
+        }
+        
+        // Show favorites page
+        function showFavoritesPage() {
+            mainPage.style.display = 'none';
+            seriesPage.style.display = 'none';
+            episodesPage.style.display = 'none';
+            detailPage.style.display = 'none';
+            videoPlayerPage.style.display = 'none';
+            favoritesPage.style.display = 'flex';
+            
+            document.querySelectorAll('.bottom-nav .nav-button').forEach((btn, index) => {
+                if (index === 1) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Add to history for back button
+            history.pushState({ page: 'favorites' }, null, null);
+        }
+        
+        // Setup glow effect for cards
+        function setupGlowEffect() {
+            const cards = document.querySelectorAll('.movie-card, .series-card');
+            
+            // Apply glow effect to random cards every 10 seconds
+            setInterval(() => {
+                cards.forEach(card => card.classList.remove('glow'));
+                
+                // Select 1-3 random cards to glow
+                const glowCount = Math.floor(Math.random() * 3) + 1;
+                for (let i = 0; i < glowCount; i++) {
+                    const randomIndex = Math.floor(Math.random() * cards.length);
+                    cards[randomIndex].classList.add('glow');
+                    
+                    // Remove glow after 3 seconds
+                    setTimeout(() => {
+                        cards[randomIndex].classList.remove('glow');
+                    }, 3000);
+                }
+            }, 10000);
+        }
+        
+        // Show loading spinner
+        function showLoading() {
+            loadingSpinner.style.display = 'block';
+        }
+        
+        // Hide loading spinner
+        function hideLoading() {
+            loadingSpinner.style.display = 'none';
+        }
+        
+        // Refresh content
+        function refreshContent() {
+            loadAllContent();
+        }
+        
+        // Initialize favorite button
+        document.getElementById('favorite-btn').addEventListener('click', toggleFavorite);
+    </script>
+</body>
+</html>
