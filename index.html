@@ -88,6 +88,19 @@
             font-weight: bold;
             text-decoration: none;
             animation: fadeIn 1s ease-out;
+            display: flex;
+            align-items: center;
+        }
+
+        .app-logo i {
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .main-content {
@@ -102,6 +115,11 @@
         .welcome-section {
             margin-bottom: 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255,0,0,0.1), rgba(0,0,0,0.7));
         }
 
         .welcome-title {
@@ -109,15 +127,20 @@
             margin-bottom: 10px;
             color: var(--primary-color);
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 1;
         }
 
         .welcome-subtitle {
             font-size: 16px;
             color: var(--gray-color);
+            position: relative;
+            z-index: 1;
         }
 
         .category-section {
             margin-bottom: 30px;
+            position: relative;
         }
 
         .category-title {
@@ -127,11 +150,27 @@
             display: flex;
             align-items: center;
             color: var(--light-color);
+            position: relative;
         }
 
         .category-title i {
             margin-left: 10px;
             color: var(--primary-color);
+        }
+
+        .category-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            right: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .category-title:hover::after {
+            width: 100px;
         }
 
         .movies-container {
@@ -166,10 +205,12 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             flex-shrink: 0;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
         .movie-card:hover {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-5px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
         }
 
@@ -185,6 +226,10 @@
             transition: transform 0.5s ease;
         }
 
+        .movie-card:hover .movie-poster {
+            transform: scale(1.1);
+        }
+
         .movie-title-overlay {
             position: absolute;
             bottom: 0;
@@ -193,6 +238,12 @@
             background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
             padding: 8px;
             text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover .movie-title-overlay {
+            transform: translateY(0);
         }
 
         .movie-title-text {
@@ -214,10 +265,12 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             flex-shrink: 0;
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
         .series-card:hover {
-            transform: scale(1.05);
+            transform: scale(1.05) translateY(-5px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
         }
 
@@ -226,6 +279,11 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .series-card:hover .series-poster {
+            transform: scale(1.1);
         }
 
         .series-info-overlay {
@@ -236,6 +294,12 @@
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             padding: 8px;
             text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .series-card:hover .series-info-overlay {
+            transform: translateY(0);
         }
 
         .series-title {
@@ -278,6 +342,10 @@
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .series-cover {
@@ -286,6 +354,12 @@
             border-radius: 8px;
             object-fit: cover;
             margin-left: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .series-cover:hover {
+            transform: scale(1.03);
         }
 
         .series-info {
@@ -330,11 +404,13 @@
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .season-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            background-color: var(--primary-dark);
         }
 
         .season-number {
@@ -374,6 +450,10 @@
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .season-cover {
@@ -382,6 +462,12 @@
             border-radius: 8px;
             object-fit: cover;
             margin-left: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .season-cover:hover {
+            transform: scale(1.03);
         }
 
         .season-info {
@@ -413,17 +499,24 @@
             overflow: hidden;
             transition: all 0.3s;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
         .episode-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            background-color: var(--primary-dark);
         }
 
         .episode-image {
             width: 100%;
             height: 120px;
             object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .episode-card:hover .episode-image {
+            transform: scale(1.1);
         }
 
         .episode-info {
@@ -496,6 +589,7 @@
 
         .back-button:hover {
             background-color: var(--primary-color);
+            transform: scale(1.1);
         }
 
         .detail-info-container {
@@ -541,6 +635,11 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .detail-info-content:hover {
+            transform: translateY(-5px);
         }
 
         .detail-title {
@@ -558,6 +657,11 @@
             border-radius: 20px;
             font-size: 14px;
             margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .detail-rating:hover {
+            transform: scale(1.05);
         }
 
         .detail-rating i {
@@ -610,6 +714,11 @@
             left: 100%;
         }
 
+        .play-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(255,0,0,0.3);
+        }
+
         .play-button i {
             margin-left: 10px;
             transform: translateX(-10px);
@@ -640,6 +749,7 @@
 
         .favorite-button:hover {
             background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
         }
 
         /* Video Player Page */
@@ -727,6 +837,7 @@
 
         .close-player-btn:hover {
             background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
         }
 
         /* Hide Controls Button */
@@ -760,6 +871,7 @@
 
         .hide-controls-btn:hover {
             background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
         }
 
         /* Center Play Button */
@@ -956,10 +1068,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.2s;
         }
 
         .settings-option:hover {
             background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
         }
 
         .settings-option.active {
@@ -993,10 +1107,12 @@
             color: white;
             font-size: 13px;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .settings-suboption:hover {
             background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
         }
 
         .settings-suboption.active {
@@ -1036,6 +1152,11 @@
             font-size: 20px;
             cursor: pointer;
             margin-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .favorites-back-button:hover {
+            transform: scale(1.1);
         }
 
         .favorites-header i {
@@ -1083,6 +1204,7 @@
         .nav-button i {
             font-size: 20px;
             margin-bottom: 5px;
+            transition: all 0.3s;
         }
 
         .nav-button.active {
@@ -1092,6 +1214,11 @@
 
         .nav-button:hover {
             color: var(--light-color);
+            transform: translateY(-3px);
+        }
+
+        .nav-button:hover i {
+            transform: scale(1.1);
         }
 
         /* Loading Spinner */
@@ -1144,7 +1271,7 @@
         }
 
         .refresh-button:hover {
-            transform: rotate(180deg);
+            transform: rotate(180deg) scale(1.1);
             background-color: var(--primary-dark);
         }
 
@@ -1238,7 +1365,9 @@
     
     <!-- Main Page -->
     <header class="app-header">
-        <a href="#" class="app-logo" onclick="showMainPage()">Movie Play</a>
+        <a href="#" class="app-logo" onclick="showMainPage()">
+            <i class="fas fa-film"></i> Movie Play
+        </a>
     </header>
     
     <div class="main-content" id="main-page">
@@ -1270,11 +1399,6 @@
         <section class="category-section">
             <h2 class="category-title"><i class="fas fa-tv"></i> مسلسلات عربية</h2>
             <div class="movies-container" id="arabic-series"></div>
-        </section>
-        
-        <section class="category-section">
-            <h2 class="category-title"><i class="fas fa-tv"></i> مسلسلات تركية</h2>
-            <div class="movies-container" id="turkish-series"></div>
         </section>
         
         <section class="category-section">
@@ -1960,24 +2084,6 @@
                             name: seriesData.name || 'مسلسل جديد',
                             cover: seriesData.cover || 'https://via.placeholder.com/150x225'
                         }, 'arSerious', seriesKey));
-                    }
-                }
-            });
-            
-            // Load Turkish Series
-            database.ref('trSerious').once('value').then(snapshot => {
-                const series = snapshot.val();
-                const turkishSeries = document.getElementById('turkish-series');
-                turkishSeries.innerHTML = '';
-                
-                for (const seriesKey in series) {
-                    if (series.hasOwnProperty(seriesKey)) {
-                        const seriesData = series[seriesKey];
-                        
-                        turkishSeries.appendChild(createSeriesCard({
-                            name: seriesData.name || 'مسلسل تركي جديد',
-                            cover: seriesData.cover || 'https://via.placeholder.com/150x225'
-                        }, 'trSerious', seriesKey));
                     }
                 }
             });
